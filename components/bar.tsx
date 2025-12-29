@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { createClient } from "@/lib/supabase/client";
 
 interface BarProps {
   activeTab: "egress" | "ingress";
@@ -30,6 +31,18 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
     currency: "TWD",
     minimumFractionDigits: 0,
   }).format(balance);
+  const supabase = createClient();
+
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${
+          process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+        }/api/auth/callback`,
+      },
+    });
+  };
 
   return (
     <div className="flex flex-row items-center justify-between w-full h-full">
@@ -91,7 +104,7 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
         </DropdownMenu>
       ) : (
         <button
-          onClick={signInWithGoogle}
+          onClick={handleLogin}
           disabled={loading}
           className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="登入"
