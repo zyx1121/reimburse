@@ -31,17 +31,6 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
     minimumFractionDigits: 0,
   }).format(balance);
 
-  const getInitials = (email: string | undefined) => {
-    if (!email) return "?";
-    const parts = email.split("@")[0];
-    return parts
-      .split(".")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
     <div className="flex flex-row items-center justify-between w-full h-full">
       <div className="flex flex-row items-center gap-4">
@@ -91,20 +80,18 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem disabled>
-              {user.user_metadata.name}
+              {user.user_metadata?.name || user.email}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <form action={signOut}>
-              <DropdownMenuItem onClick={signOut}>
-                Log out
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </form>
+            <DropdownMenuItem onClick={signOut}>
+              登出
+              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
         <button
-          onClick={async () => await signInWithGoogle()}
+          onClick={signInWithGoogle}
           disabled={loading}
           className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="登入"

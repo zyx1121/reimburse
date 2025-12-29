@@ -6,6 +6,9 @@ import { getEgressList } from "@/lib/supabase/egress";
 import { transformIngress } from "@/lib/supabase/transformers";
 import { transformEgress } from "@/lib/supabase/transformers";
 
+// Force dynamic rendering since we use cookies for authentication
+export const dynamic = "force-dynamic";
+
 async function getIngressData(): Promise<Ingress[]> {
   try {
     const dbIngress = await getIngressList();
