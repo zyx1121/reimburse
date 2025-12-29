@@ -1,6 +1,7 @@
 // components/bar.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,7 +18,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
-// import { createClient } from "@/lib/supabase/client";
+import { isGlobalAdmin, isSystemAdmin, type Roles } from "@/lib/utils/roles";
 
 interface BarProps {
   activeTab: "egress" | "ingress";
@@ -27,6 +28,8 @@ interface BarProps {
 
 export function Bar({ activeTab, onTabChange, balance }: BarProps) {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const [isReimburseAdmin, setIsReimburseAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(false);
   const formattedBalance = new Intl.NumberFormat("zh-TW", {
     style: "currency",
     currency: "TWD",
@@ -34,15 +37,58 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
   }).format(balance);
   const supabase = createClient();
 
+  useEffect(() => {
+    if (!user) {
+      setIsReimburseAdmin(false);
+      return;
+    }
+
+    let cancelled = false;
+    async function checkAdmin() {
+      if (!user) {
+        // 型別守衛，避免 TS 認為 user 可能為 null
+        setIsReimburseAdmin(false);
+        return;
+      }
+      setCheckingAdmin(true);
+      try {
+        const { data: profile, error } = await supabase
+          .from("user_profiles")
+          .select("roles, is_admin")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Failed to load user profile for roles:", error);
+          if (!cancelled) setIsReimburseAdmin(false);
+          return;
+        }
+
+        const roles = (profile?.roles ?? null) as Roles | null;
+        const isAdmin =
+          isSystemAdmin(roles, "reimburse") ||
+          isGlobalAdmin(
+            roles,
+            (profile as { is_admin?: boolean | null })?.is_admin
+          );
+
+        if (!cancelled) {
+          setIsReimburseAdmin(isAdmin);
+        }
+      } finally {
+        if (!cancelled) setCheckingAdmin(false);
+      }
+    }
+
+    void checkAdmin();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, user]);
+
   const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${
-          process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-        }/api/auth/callback`,
-      },
-    });
+    await signInWithGoogle();
   };
 
   return (
@@ -69,7 +115,7 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
             {formattedBalance}
           </Badge>
         </div>
-        {user && (
+        {user && isReimburseAdmin && !checkingAdmin && (
           <div className="ml-4">
             {activeTab === "egress" ? (
               <AddEgressDialog />
