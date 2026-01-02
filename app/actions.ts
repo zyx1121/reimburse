@@ -1,9 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createEgress } from "@/lib/supabase/egress";
-import { createIngress } from "@/lib/supabase/ingress";
-import type { InsertEgress, InsertIngress } from "@/lib/supabase/types";
+import { createEgress, updateEgress } from "@/lib/supabase/egress";
+import { createIngress, updateIngress } from "@/lib/supabase/ingress";
+import type {
+  InsertEgress,
+  InsertIngress,
+  UpdateEgress,
+  UpdateIngress,
+} from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/server";
 import { isGlobalAdmin, isSystemAdmin, type Roles } from "@/lib/utils/roles";
 
@@ -61,6 +66,36 @@ export async function addIngressAction(data: InsertIngress) {
     return { success: true };
   } catch (error) {
     console.error("Failed to create ingress:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "未知錯誤",
+    };
+  }
+}
+
+export async function updateEgressAction(id: string, data: UpdateEgress) {
+  try {
+    await ensureReimburseAdmin();
+    await updateEgress(id, data);
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update egress:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "未知錯誤",
+    };
+  }
+}
+
+export async function updateIngressAction(id: string, data: UpdateIngress) {
+  try {
+    await ensureReimburseAdmin();
+    await updateIngress(id, data);
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update ingress:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "未知錯誤",
