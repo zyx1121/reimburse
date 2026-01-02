@@ -100,9 +100,7 @@ export function AddEgressDialog() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>新增支出記錄</DialogTitle>
-            <DialogDescription>
-              請填寫以下資訊以新增支出記錄
-            </DialogDescription>
+            <DialogDescription>請填寫以下資訊以新增支出記錄</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -202,7 +200,7 @@ export function AddEgressDialog() {
                 />
               </div>
             </div>
-            <div className="grid gap-2">
+            {/* <div className="grid gap-2">
               <Label htmlFor="invoice_files">發票檔案（以逗號分隔）</Label>
               <Input
                 id="invoice_files"
@@ -212,7 +210,7 @@ export function AddEgressDialog() {
                 }
                 placeholder="例如: file1.jpg, file2.pdf"
               />
-            </div>
+            </div> */}
             <div className="grid gap-2">
               <Label htmlFor="status">狀態</Label>
               <Select
@@ -253,4 +251,3 @@ export function AddEgressDialog() {
     </Dialog>
   );
 }
-

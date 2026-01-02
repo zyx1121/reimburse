@@ -46,7 +46,6 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
     let cancelled = false;
     async function checkAdmin() {
       if (!user) {
-        // 型別守衛，避免 TS 認為 user 可能為 null
         setIsReimburseAdmin(false);
         return;
       }
@@ -93,7 +92,7 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
 
   return (
     <div className="flex flex-row items-center justify-between w-full h-full">
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex flex-row items-center">
         <Button
           variant={activeTab === "egress" ? "outline" : "ghost"}
           onClick={() => onTabChange("egress")}
@@ -106,15 +105,12 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
         >
           Ingress
         </Button>
-        <div className="flex flex-row items-center gap-2">
-          <span className="text-sm text-muted-foreground">餘額：</span>
-          <Badge
-            variant={balance >= 0 ? "default" : "destructive"}
-            className="font-mono"
-          >
-            {formattedBalance}
-          </Badge>
-        </div>
+        <Badge
+          variant={balance >= 0 ? "default" : "destructive"}
+          className="font-mono ml-4"
+        >
+          {formattedBalance}
+        </Badge>
         {user && isReimburseAdmin && !checkingAdmin && (
           <div className="ml-4">
             {activeTab === "egress" ? (

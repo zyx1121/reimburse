@@ -85,21 +85,18 @@ export function EgressChart({ data }: EgressChartProps) {
     >
       <LineChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="weekLabel"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={10}
-          interval={0}
-          padding={{ left: 20, right: 20 }}
-          tickFormatter={(value) =>
-            value.replace("年第", "/").replace("週", "")
-          }
-        />
-        <YAxis hide />
         <ChartTooltip
           content={
             <ChartTooltipContent
+              labelFormatter={(label, payload) => {
+                if (payload && payload.length > 0) {
+                  const data = payload[0].payload;
+                  if (data && data.weekLabel) {
+                    return data.weekLabel;
+                  }
+                }
+                return label;
+              }}
               formatter={(value, name, item, index, payload) => {
                 if (typeof value === "number") {
                   return [

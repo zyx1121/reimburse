@@ -76,9 +76,7 @@ export function AddIngressDialog() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>新增收入記錄</DialogTitle>
-            <DialogDescription>
-              請填寫以下資訊以新增收入記錄
-            </DialogDescription>
+            <DialogDescription>請填寫以下資訊以新增收入記錄</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -124,7 +122,7 @@ export function AddIngressDialog() {
                 rows={3}
               />
             </div>
-            <div className="grid gap-2">
+            {/* <div className="grid gap-2">
               <Label htmlFor="ingress_files">相關檔案（以逗號分隔）</Label>
               <Input
                 id="ingress_files"
@@ -134,7 +132,7 @@ export function AddIngressDialog() {
                 }
                 placeholder="例如: file1.jpg, file2.pdf"
               />
-            </div>
+            </div> */}
           </div>
           <DialogFooter>
             <Button
@@ -154,4 +152,3 @@ export function AddIngressDialog() {
     </Dialog>
   );
 }
-
