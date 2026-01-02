@@ -91,9 +91,9 @@ export function AddEgressDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="default">
-          <Plus className="h-4 w-4 mr-2" />
-          新增支出
+        <Button size="icon" variant="outline">
+          <Plus />
+          {/* 新增支出 */}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">

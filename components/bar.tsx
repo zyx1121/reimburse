@@ -105,14 +105,17 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
         >
           Ingress
         </Button>
+      </div>
+
+      <div className="flex flex-row items-center gap-4">
         <Badge
           variant={balance >= 0 ? "default" : "destructive"}
-          className="font-mono ml-4"
+          className="font-mono"
         >
           {formattedBalance}
         </Badge>
         {user && isReimburseAdmin && !checkingAdmin && (
-          <div className="ml-4">
+          <div className="">
             {activeTab === "egress" ? (
               <AddEgressDialog />
             ) : (
@@ -120,45 +123,44 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
             )}
           </div>
         )}
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="rounded-full outline-none focus:ring-2 focus:ring-ring">
+                <Avatar className="cursor-pointer">
+                  <AvatarImage src={user.user_metadata.avatar_url} />
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem disabled>
+                {user.user_metadata?.name || user.email}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut}>
+                登出
+                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="登入"
+          >
+            <Avatar>
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+          </button>
+        )}
       </div>
-
-      {user ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="rounded-full outline-none focus:ring-2 focus:ring-ring">
-              <Avatar className="cursor-pointer">
-                <AvatarImage src={user.user_metadata.avatar_url} />
-                <AvatarFallback>
-                  <User className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled>
-              {user.user_metadata?.name || user.email}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOut}>
-              登出
-              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="登入"
-        >
-          <Avatar>
-            <AvatarFallback>
-              <User className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-        </button>
-      )}
     </div>
   );
 }

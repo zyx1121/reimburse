@@ -67,9 +67,9 @@ export function AddIngressDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="default">
-          <Plus className="h-4 w-4 mr-2" />
-          新增收入
+        <Button size="icon" variant="outline">
+          <Plus />
+          {/* 新增收入 */}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
