@@ -109,7 +109,7 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
 
       <div className="flex flex-row items-center gap-4">
         <Badge
-          variant={balance >= 0 ? "default" : "destructive"}
+          variant={balance >= 0 ? "outline" : "destructive"}
           className="font-mono"
         >
           {formattedBalance}
