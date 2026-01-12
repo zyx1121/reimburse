@@ -15,15 +15,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-interface EgressTableProps<TData, TValue> {
+interface UnifiedTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function EgressTable<TData, TValue>({
+export function UnifiedTable<TData, TValue>({
   columns,
   data,
-}: EgressTableProps<TData, TValue>) {
+}: UnifiedTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
@@ -32,7 +32,7 @@ export function EgressTable<TData, TValue>({
 
   return (
     <div className="w-full h-full flex flex-col gap-4 min-h-0">
-      <div className="w-full flex-1 min-h-0 overflow-auto rounded-lg border dark:border-input bg-background/50 backdrop-blur-sm">
+      <div className="w-full flex-1 min-h-0 overflow-auto rounded-lg border dark:border-input bg-background/70 backdrop-blur-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

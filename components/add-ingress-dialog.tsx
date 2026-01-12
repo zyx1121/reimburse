@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { addIngressAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,8 +14,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { addIngressAction } from "@/app/actions";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function AddIngressDialog() {
   const router = useRouter();
@@ -67,9 +67,12 @@ export function AddIngressDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline">
+        <Button
+          variant="outline"
+          className="bg-background/70 backdrop-blur-sm hover:scale-105 transition-all duration-200"
+        >
           <Plus />
-          {/* 新增收入 */}
+          新增收入
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

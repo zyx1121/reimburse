@@ -1,24 +1,23 @@
-// components/bar.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/lib/hooks/use-auth";
-import { User } from "lucide-react";
 import { AddEgressDialog } from "@/components/add-egress-dialog";
 import { AddIngressDialog } from "@/components/add-ingress-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 import { isGlobalAdmin, isSystemAdmin, type Roles } from "@/lib/utils/roles";
+import type { User } from "@supabase/supabase-js";
+import { User as LucideUser } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface BarProps {
   activeTab: "egress" | "ingress";
@@ -27,7 +26,9 @@ interface BarProps {
 }
 
 export function Bar({ activeTab, onTabChange, balance }: BarProps) {
-  const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isReimburseAdmin, setIsReimburseAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
   const formattedBalance = new Intl.NumberFormat("zh-TW", {
@@ -35,7 +36,22 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
     currency: "TWD",
     minimumFractionDigits: 0,
   }).format(balance);
-  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -87,7 +103,13 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
   }, [supabase, user]);
 
   const handleLogin = async () => {
-    await signInWithGoogle();
+    await supabase.auth.signInWithOAuth({
+      provider: "keycloak",
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback`,
+        scopes: "openid",
+      },
+    });
   };
 
   return (
@@ -130,7 +152,7 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
                 <Avatar className="cursor-pointer">
                   <AvatarImage src={user.user_metadata.avatar_url} />
                   <AvatarFallback>
-                    <User className="h-4 w-4" />
+                    <LucideUser className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
               </button>
@@ -140,7 +162,7 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
                 {user.user_metadata?.name || user.email}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut}>
+              <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
                 登出
                 <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
               </DropdownMenuItem>
@@ -149,13 +171,12 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
         ) : (
           <button
             onClick={handleLogin}
-            disabled={loading}
             className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="登入"
           >
             <Avatar>
               <AvatarFallback>
-                <User className="h-4 w-4" />
+                <LucideUser className="h-4 w-4" />
               </AvatarFallback>
             </Avatar>
           </button>

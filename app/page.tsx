@@ -1,10 +1,9 @@
+import { DataView } from "@/components/data-view";
 import { Reimbursement } from "@/components/egress-columns";
 import { Ingress } from "@/components/ingress-columns";
-import { DataView } from "@/components/data-view";
-import { getIngressList } from "@/lib/supabase/ingress";
 import { getEgressList } from "@/lib/supabase/egress";
-import { transformIngress } from "@/lib/supabase/transformers";
-import { transformEgress } from "@/lib/supabase/transformers";
+import { getIngressList } from "@/lib/supabase/ingress";
+import { transformEgress, transformIngress } from "@/lib/supabase/transformers";
 
 // Force dynamic rendering since we use cookies for authentication
 export const dynamic = "force-dynamic";
@@ -41,7 +40,7 @@ export default async function Main() {
   const egressData = await getData();
   const ingressData = await getIngressData();
   return (
-    <div className="h-dvh w-dvw flex flex-col">
+    <div className="flex flex-col max-w-5xl mx-auto">
       <DataView egressData={egressData} ingressData={ingressData} />
     </div>
   );

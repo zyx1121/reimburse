@@ -1,18 +1,22 @@
 "use client";
 
-import type { Reimbursement } from "@/components/egress-columns";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import type { Transaction } from "@/components/unified-columns";
 import { CartesianGrid, Line, LineChart } from "recharts";
 
 const chartConfig = {
-  amount: {
-    label: "開銷",
-    color: "#2563eb",
+  ingress: {
+    label: "收入",
+    color: "#22c55e",
+  },
+  egress: {
+    label: "支出",
+    color: "#ef4444",
   },
 } satisfies ChartConfig;
 
@@ -45,49 +49,69 @@ function getWeekKey(date: Date): string {
 // Helper function to format week label
 function formatWeekLabel(weekKey: string): string {
   const [year, week] = weekKey.split("-W");
-  return `${year}年第${parseInt(week)}週`;
+  return `${year} 年第 ${parseInt(week)} 週`;
 }
 
-function processData(data: Reimbursement[]) {
-  // Group by week
-  const weekMap = new Map<string, number>();
+function processData(data: Transaction[]) {
+  // Group by week for both ingress and egress
+  const ingressWeekMap = new Map<string, number>();
+  const egressWeekMap = new Map<string, number>();
 
   data.forEach((item) => {
-    const date = new Date(item.invoiceDate);
+    const date =
+      item.type === "egress"
+        ? new Date(item.invoiceDate)
+        : new Date(item.ingressDate);
     const weekKey = getWeekKey(date);
-    const currentAmount = weekMap.get(weekKey) || 0;
-    weekMap.set(weekKey, currentAmount + item.itemAmount);
+
+    if (item.type === "ingress") {
+      const currentAmount = ingressWeekMap.get(weekKey) || 0;
+      ingressWeekMap.set(weekKey, currentAmount + item.ingressAmount);
+    } else {
+      const currentAmount = egressWeekMap.get(weekKey) || 0;
+      const totalAmount = item.itemAmount + (item.transferFee || 0);
+      egressWeekMap.set(weekKey, currentAmount + totalAmount);
+    }
   });
 
+  // Get all unique weeks
+  const allWeeks = new Set([
+    ...Array.from(ingressWeekMap.keys()),
+    ...Array.from(egressWeekMap.keys()),
+  ]);
+
   // Convert to array and sort by week
-  const chartData = Array.from(weekMap.entries())
-    .map(([week, amount]) => ({
+  const chartData = Array.from(allWeeks)
+    .map((week) => ({
       week: week,
       weekLabel: formatWeekLabel(week),
-      amount: amount,
+      ingress: ingressWeekMap.get(week) || 0,
+      egress: egressWeekMap.get(week) || 0,
     }))
     .sort((a, b) => a.week.localeCompare(b.week));
 
   return chartData;
 }
 
-interface EgressChartProps {
-  data: Reimbursement[];
+interface UnifiedChartProps {
+  data: Transaction[];
 }
 
-export function EgressChart({ data }: EgressChartProps) {
+export function UnifiedChart({ data }: UnifiedChartProps) {
   const chartData = processData(data);
 
   return (
     <ChartContainer
       config={chartConfig}
-      className="h-full w-full border dark:border-input rounded-lg p-4 bg-background/50 backdrop-blur-sm"
+      className="h-full w-full border dark:border-input rounded-lg p-4 bg-background/70 backdrop-blur-sm"
     >
       <LineChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <ChartTooltip
+          cursor={false}
           content={
             <ChartTooltipContent
+              indicator="dot"
               labelFormatter={(label, payload) => {
                 if (payload && payload.length > 0) {
                   const data = payload[0].payload;
@@ -97,9 +121,10 @@ export function EgressChart({ data }: EgressChartProps) {
                 }
                 return label;
               }}
-              formatter={(value, name, item, index, payload) => {
+              formatter={(value, name) => {
                 if (typeof value === "number") {
                   return [
+                    name === "ingress" ? "收入 " : "支出 ",
                     new Intl.NumberFormat("zh-TW", {
                       style: "currency",
                       currency: "TWD",
@@ -114,10 +139,18 @@ export function EgressChart({ data }: EgressChartProps) {
         />
         <Line
           type="monotone"
-          dataKey="amount"
-          stroke="var(--color-amount)"
+          dataKey="ingress"
+          stroke="var(--color-ingress)"
           strokeWidth={2}
-          dot={{ r: 4 }}
+          dot={false}
+          activeDot={{ r: 6 }}
+        />
+        <Line
+          type="monotone"
+          dataKey="egress"
+          stroke="var(--color-egress)"
+          strokeWidth={2}
+          dot={false}
           activeDot={{ r: 6 }}
         />
       </LineChart>
