@@ -8,20 +8,17 @@ import { useEffect, useState } from "react";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      setLoading(false);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -68,7 +65,6 @@ export function Header() {
         <button
           onClick={handleLogin}
           className="cursor-pointer transition-all hover:opacity-80 hover:scale-105 duration-200"
-          disabled={loading}
           aria-label="Login"
         >
           <Avatar>
