@@ -37,8 +37,8 @@ export function Header() {
   return (
     <header className="flex items-center justify-between p-4 px-6 w-full max-w-5xl mx-auto">
       <Link href="/">
-        <h1 className="text-lg text-foreground font-bold hover:scale-105 transition-transform duration-200">
-          Reimbursement
+        <h1 className="text-2xl text-foreground font-bold hover:scale-105 transition-transform duration-200">
+          Reimburse
         </h1>
       </Link>
       {user ? (
