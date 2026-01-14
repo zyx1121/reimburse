@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 import { isGlobalAdmin, isSystemAdmin, type Roles } from "@/lib/utils/roles";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "@/contexts/auth-context";
 import { User as LucideUser } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -27,8 +27,7 @@ interface BarProps {
 
 export function Bar({ activeTab, onTabChange, balance }: BarProps) {
   const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const [isReimburseAdmin, setIsReimburseAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
   const formattedBalance = new Intl.NumberFormat("zh-TW", {
@@ -36,22 +35,6 @@ export function Bar({ activeTab, onTabChange, balance }: BarProps) {
     currency: "TWD",
     minimumFractionDigits: 0,
   }).format(balance);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   useEffect(() => {
     if (!user) {

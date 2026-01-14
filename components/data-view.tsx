@@ -11,7 +11,7 @@ import {
   type Transaction,
 } from "@/components/unified-columns";
 import { UnifiedTable } from "@/components/unified-table";
-import { useAuth } from "@/lib/hooks/use-auth";
+import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import { isGlobalAdmin, isSystemAdmin, type Roles } from "@/lib/utils/roles";
 import { useEffect, useState } from "react";
