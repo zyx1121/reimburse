@@ -7,6 +7,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import type { Transaction } from "@/components/unified-columns";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CartesianGrid, Line, LineChart } from "recharts";
 
 const chartConfig = {
@@ -98,14 +99,89 @@ interface UnifiedChartProps {
 }
 
 export function UnifiedChart({ data }: UnifiedChartProps) {
-  const chartData = processData(data);
+  const chartData = useMemo(() => processData(data), [data]);
+  const [displayData, setDisplayData] = useState<typeof chartData>([]);
+  const [isAnimating, setIsAnimating] = useState(true);
+  const chartDataRef = useRef<string>("");
+  const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  // Generate a string representation of chart data for comparison
+  const chartDataString = useMemo(
+    () => JSON.stringify(chartData),
+    [chartData]
+  );
+
+  // Trigger animation by starting with empty data, then setting actual data
+  useEffect(() => {
+    // Clear any pending animations
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current);
+      animationTimerRef.current = null;
+    }
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    
+    // If data has actually changed
+    if (chartDataString !== chartDataRef.current) {
+      chartDataRef.current = chartDataString;
+      
+      if (chartData.length > 0) {
+        // Always start with empty data to trigger animation
+        setDisplayData([]);
+        setIsAnimating(true);
+        
+        // Use requestAnimationFrame to ensure the empty state renders first
+        // Then use setTimeout to set the actual data
+        rafRef.current = requestAnimationFrame(() => {
+          animationTimerRef.current = setTimeout(() => {
+            setDisplayData(chartData);
+            animationTimerRef.current = null;
+            rafRef.current = null;
+          }, 200); // Increased delay for more reliable animation
+        });
+      } else {
+        // If no data, just set empty array
+        setDisplayData([]);
+      }
+    } else if (chartData.length > 0 && displayData.length === 0) {
+      // If data hasn't changed but displayData is still empty, set it
+      setDisplayData(chartData);
+    }
+    
+    // Cleanup function
+    return () => {
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+        animationTimerRef.current = null;
+      }
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [chartDataString, chartData.length]);
+
+  // Generate a unique key that changes when data changes
+  const chartKey = useMemo(
+    () =>
+      `chart-${chartDataString.slice(0, 50)}-${displayData.length}`,
+    [chartDataString, displayData.length]
+  );
 
   return (
     <ChartContainer
       config={chartConfig}
       className="h-full w-full border dark:border-input rounded-lg p-4 bg-background/70 backdrop-blur-sm"
     >
-      <LineChart accessibilityLayer data={chartData}>
+      <LineChart
+        key={chartKey}
+        accessibilityLayer
+        data={displayData}
+        margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+      >
         <CartesianGrid vertical={false} />
         <ChartTooltip
           cursor={false}
@@ -144,6 +220,10 @@ export function UnifiedChart({ data }: UnifiedChartProps) {
           strokeWidth={2}
           dot={false}
           activeDot={{ r: 6 }}
+          isAnimationActive={isAnimating}
+          animationDuration={1000}
+          animationBegin={0}
+          animationEasing="ease-out"
         />
         <Line
           type="monotone"
@@ -152,6 +232,10 @@ export function UnifiedChart({ data }: UnifiedChartProps) {
           strokeWidth={2}
           dot={false}
           activeDot={{ r: 6 }}
+          isAnimationActive={isAnimating}
+          animationDuration={1000}
+          animationBegin={150}
+          animationEasing="ease-out"
         />
       </LineChart>
     </ChartContainer>
